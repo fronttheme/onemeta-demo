@@ -1,0 +1,473 @@
+/*
+Theme Name:   OneMeta Demo
+Theme URI:    https://github.com/fronttheme/onemeta-demo
+Author:       Faruk Ahmed
+Author URI:   https://fronttheme.com
+Description:  Demonstration and test-harness theme for the OneMeta custom fields plugin. Registers field groups for every field type, every conditional-logic pattern, repeater fields, and user meta via the onemeta_field_groups filter — no builder setup required. Renders all saved values on the front end for verification. Not intended for production use.
+Version:      1.0.0
+Requires at least: 6.8
+Tested up to: 7.0
+Requires PHP: 8.2
+License:      GPL v2 or later
+License URI:  https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain:  onemeta-demo
+*/
+
+/* -----------------------------------------------------------
+   1. Reset & Base
+----------------------------------------------------------- */
+:root {
+  /* Mapped directly from includes' _variables.scss so this demo reads as
+     a sibling of the real admin UI, not a generic placeholder theme. */
+  --omd-bg: #F4F0F7; /* $color-gray-50 */
+  --omd-surface: #ffffff; /* $color-white */
+  --omd-border: #C8BADB; /* $color-gray-200 / $color-border */
+  --omd-text: #2f2c6e; /* $color-gray-500 / $color-text */
+  --omd-text-muted: #665999; /* $color-gray-400 / $color-text-light */
+  --omd-primary: #6f26f8; /* $color-primary-500 */
+  --omd-primary-dark: #3d0b9e; /* $color-primary-dark */
+  --omd-accent: #a174f6; /* $color-primary-light */
+  --omd-success: #00a32a; /* $color-success */
+  --omd-warning: #dba617; /* $color-warning */
+  --omd-danger: #d63638; /* $color-danger */
+  --omd-info: #3582c4; /* $color-info */
+  --omd-code-bg: #262254;
+  --omd-code-text: #23D999;
+  --omd-radius: 16px; /* $card-border-radius ($border-radius-xl) */
+  --omd-radius-sm: 6px; /* $border-radius-base */
+  --omd-shadow: 0 1px 3px 0 rgba(27, 24, 82, 0.1), 0 1px 2px 0 rgba(27, 24, 82, 0.06); /* $shadow-base on $color-gray-700 */
+  --omd-mono: "JetBrains Mono", "Monaco", "Consolas", "Courier New", monospace;
+  --omd-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+[data-omd-theme="dark"] {
+  /* No dark tokens exist in the real _variables.scss (admin is light-only) —
+     these stay within the same purple-navy family ($color-gray-700/800/900,
+     $color-black) rather than introducing an unrelated dark palette. */
+  --omd-bg: #161436; /* $color-black */
+  --omd-surface: #1b183e; /* $color-gray-800 */
+  --omd-border: #262254; /* $color-gray-700 */
+  --omd-text: #E8E1F0; /* $color-gray-100 */
+  --omd-text-muted: #A595C4; /* $color-gray-300 */
+  --omd-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+* { box-sizing: border-box; }
+
+body.onemeta-demo {
+  margin: 0;
+  background: var(--omd-bg);
+  color: var(--omd-text);
+  font-family: var(--omd-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--omd-primary); text-decoration: none; }
+
+a:hover { text-decoration: underline; }
+
+img { max-width: 100%; display: block; }
+
+/* -----------------------------------------------------------
+   2. Header
+----------------------------------------------------------- */
+.omd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  background: var(--omd-surface);
+  border-bottom: 1px solid var(--omd-border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.omd-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--omd-primary);
+}
+
+.omd-header__brand:hover {
+  text-decoration: none;
+}
+
+.omd-header__logo {
+  height: 30px;
+  width: auto;
+  display: block;
+  color: var(--omd-primary);
+}
+
+[data-omd-theme="dark"] .omd-header__logo {
+  filter: invert(1);
+}
+
+.omd-header__tagline {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  letter-spacing: 0.08em;
+  color: var(--omd-accent);
+  border-inline-start: 1px solid var(--omd-accent);
+  padding-inline-start: 10px;
+}
+
+.omd-header__brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--omd-primary), var(--omd-accent));
+  flex-shrink: 0;
+}
+
+.omd-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.omd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--omd-radius-sm);
+  border: 1px solid var(--omd-border);
+  background: var(--omd-surface);
+  color: var(--omd-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.omd-btn[data-omd-theme-toggle] {
+  padding: 0;
+  border-radius: 0;
+  border: 0;
+  background: none;
+}
+
+.omd-btn[data-omd-theme-toggle] #omd-theme__icon {
+  height: 24px;
+  width: auto;
+  display: block;
+  fill: currentColor;
+}
+
+.omd-btn:hover { border-color: var(--omd-primary); color: var(--omd-primary); text-decoration: none; }
+
+.omd-btn--primary {
+  background: var(--omd-primary);
+  border-color: var(--omd-primary);
+  color: #fff;
+}
+
+.omd-btn--primary:hover { background: var(--omd-primary-dark); color: #fff; }
+
+/* -----------------------------------------------------------
+   3. Layout — Sidebar + Panels
+----------------------------------------------------------- */
+.omd-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  max-width: 1280px;
+  margin: 0 auto;
+  min-height: calc(100vh - 60px);
+}
+
+@media (max-width: 860px) {
+  .omd-shell { grid-template-columns: 1fr; }
+}
+
+.omd-sidebar {
+  padding: 24px 16px;
+  border-right: 1px solid var(--omd-border);
+}
+
+.omd-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.omd-nav__icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  fill: currentColor;
+}
+
+.omd-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--omd-radius-sm);
+  color: var(--omd-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.omd-nav__link:hover { background: var(--omd-bg); color: var(--omd-text); text-decoration: none; }
+
+.omd-nav__link.is-active {
+  background: #fff;
+  color: var(--omd-primary);
+}
+
+[data-omd-theme="dark"] .omd-nav__link.is-active {
+  background: linear-gradient(135deg, var(--omd-primary), var(--omd-primary-dark));
+  color: #fff;
+}
+
+.omd-nav__badge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: var(--omd-border);
+  color: var(--omd-text-muted);
+}
+
+.omd-main { padding: 24px 32px 64px; min-width: 0; }
+
+.omd-panel { display: none; }
+
+.omd-panel.is-active { display: block; animation: omd-fade .15s ease; }
+
+@keyframes omd-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.omd-panel__head { margin-bottom: 20px; }
+
+.omd-panel__head h1 { font-size: 22px; margin: 0 0 6px; }
+
+.omd-panel__head p { color: var(--omd-text-muted); margin: 0; max-width: 640px; }
+
+/* -----------------------------------------------------------
+   4. Cards & Fields
+----------------------------------------------------------- */
+.omd-card {
+  background: var(--omd-surface);
+  border: 1px solid var(--omd-border);
+  border-radius: var(--omd-radius);
+  box-shadow: var(--omd-shadow);
+  padding: 20px;
+  margin-bottom: 18px;
+}
+
+.omd-card__title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--omd-text-muted);
+  margin: 0 0 14px;
+}
+
+.omd-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.omd-field {
+  border: 1px solid var(--omd-border);
+  border-radius: var(--omd-radius-sm);
+  padding: 14px;
+  background: var(--omd-bg);
+}
+
+.omd-field__label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--omd-text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.omd-field__rendered { font-size: 15px; word-break: break-word; }
+
+.omd-field__rendered.is-empty { color: var(--omd-text-muted); font-style: italic; }
+
+.omd-field__note {
+  font-size: 13px;
+  color: var(--omd-text-muted);
+  margin: 10px 0 0;
+  line-height: 1.5;
+}
+
+.omd-field__note code {
+  background: var(--omd-bg);
+  border: 1px solid var(--omd-border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 12px;
+}
+
+.omd-card--bonus {
+  border-style: dashed;
+  border-color: var(--omd-accent);
+}
+
+.omd-card--bonus .omd-card__title {
+  color: var(--omd-accent);
+}
+
+.omd-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--omd-success) 14%, transparent);
+  color: var(--omd-success);
+}
+
+.omd-badge--off { background: var(--omd-border); color: var(--omd-text-muted); }
+
+/* Drawer (saved value) */
+.omd-drawer { margin-top: 10px; }
+
+.omd-drawer__toggle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--omd-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.omd-drawer__body {
+  display: none;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--omd-text);
+  color: var(--omd-code-text);
+  border-radius: var(--omd-radius-sm);
+  font-family: var(--omd-mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+[data-omd-theme="dark"] .omd-drawer__body {
+  background: var(--omd-code-bg);
+}
+
+.omd-drawer.is-open .omd-drawer__body { display: block; }
+
+.omd-drawer__type {
+  display: inline-block;
+  margin-bottom: 4px;
+  color: #8fb8ff;
+  font-weight: 700;
+}
+
+/* Repeater */
+.omd-repeater-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--omd-border);
+}
+
+.omd-repeater-row:last-child { border-bottom: none; }
+
+.omd-repeater-row__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--omd-border);
+}
+
+.omd-repeater-row__name { font-weight: 700; margin: 0; }
+
+.omd-repeater-row__role { color: var(--omd-text-muted); margin: 2px 0 0; font-size: 13px; }
+
+/* Conditional lab */
+.omd-conditional-control {
+  border: 1px dashed var(--omd-primary);
+  background: color-mix(in srgb, var(--omd-primary) 6%, var(--omd-bg));
+}
+
+.omd-conditional-dependent.is-hidden { opacity: 0.35; }
+
+.omd-operator-tag {
+  font-family: var(--omd-mono);
+  font-size: 12px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: var(--omd-border);
+}
+
+/* Notices */
+.omd-notice {
+  border: 1px solid var(--omd-border);
+  border-left: 3px solid var(--omd-primary);
+  background: var(--omd-surface);
+  border-radius: var(--omd-radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  font-size: 14px;
+}
+
+.omd-notice--warning { border-left-color: var(--omd-warning); }
+
+.omd-notice code { background: var(--omd-bg); padding: 1px 6px; border-radius: 4px; }
+
+/* X-ray toggle */
+.omd-xray { font-size: 13px; }
+
+/* All-values dump */
+.omd-dump {
+  background: var(--omd-code-bg);
+  color: var(--omd-code-text);
+  border-radius: var(--omd-radius);
+  padding: 18px;
+  font-family: var(--omd-mono);
+  font-size: 12.5px;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+[data-omd-theme="dark"] .omd-dump {
+  background: var(--omd-code-bg);
+  color: var(--omd-code-text);
+}
+
+/* Footer */
+.omd-footer {
+  text-align: center;
+  padding: 24px;
+  color: var(--omd-text-muted);
+  font-size: 13px;
+  border-top: 1px solid var(--omd-border);
+}
