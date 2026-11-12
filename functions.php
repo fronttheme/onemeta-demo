@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'OMD_VERSION', '1.0.0' );
+define( 'OMD_VERSION', '1.0.1' );
 define( 'OMD_DIR', get_template_directory() );
 define( 'OMD_URI', get_template_directory_uri() );
 

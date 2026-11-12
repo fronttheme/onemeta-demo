@@ -4,9 +4,9 @@ Theme URI:    https://github.com/fronttheme/onemeta-demo
 Author:       Faruk Ahmed
 Author URI:   https://fronttheme.com
 Description:  Demonstration and test-harness theme for the OneMeta custom fields plugin. Registers field groups for every field type, every conditional-logic pattern, repeater fields, and user meta via the onemeta_field_groups filter — no builder setup required. Renders all saved values on the front end for verification. Not intended for production use.
-Version:      1.0.0
+Version:      1.0.1
 Requires at least: 6.8
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.2
 License:      GPL v2 or later
 License URI:  https://www.gnu.org/licenses/gpl-2.0.html

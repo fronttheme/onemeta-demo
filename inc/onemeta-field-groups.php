@@ -51,7 +51,7 @@ function omd_register_field_types_lab( array $groups ): array {
 				'type'      => 'heading',
 				'label'     => 'This Is a Heading Field',
 				'tag'       => 'h3',
-				'separator' => '1',
+				'separator' => '0',
 			],
 
 			'demo_text' => [

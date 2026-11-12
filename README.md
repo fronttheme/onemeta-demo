@@ -4,10 +4,18 @@ A demonstration and test-harness WordPress theme for **[OneMeta](https://github.
 
 Every field type OneMeta ships is registered, seeded with real saved values, and rendered live on the front end. Edit the demo page in wp-admin, save, refresh — and watch the matching panel react.
 
+## Try It Live
+
+No installation needed — launch a temporary WordPress instance with OneMeta and this demo theme pre-installed, running entirely in your browser:
+
+**[▶ Try OneMeta Demo Live](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/fronttheme/onemeta-demo/main/.wordpress-org/blueprints/blueprint.json)**
+
+Powered by [WordPress Playground](https://playground.wordpress.net/) — your changes aren't saved and the instance resets when you close the tab.
+
 ## What this theme does
 
 - **Registers four field groups entirely in code** via the `onemeta_field_groups` filter — the same mechanism OneMeta's own "Export as PHP" feature generates — so every meta box is ready to use the instant the theme activates. No builder setup required.
-- **Field Types Lab**: all 14 documented field types (Text through Gallery) plus the undocumented `heading` type, on one meta box, with config arguments documented inline as a copy-ready reference.
+- **Field Types Lab**: all 14 documented field types (Text through Gallery) plus the display-only `heading` field`, on one meta box, with config arguments documented inline as a copy-ready reference.
 - **Repeater Lab**: a `team_members` repeater with name, role, and avatar sub-fields.
 - **Conditional Lab**: one control field driving four dependents — one per supported operator (`==`, `!=`, `contains`, `!contains`) — with the live pass/fail state computed and shown for each.
 - **User Meta Lab**: fields attached to `type => 'user'`, read back with `onemeta_get_user_meta()` for whoever is logged in — including a user-meta repeater (Skills).
@@ -56,14 +64,13 @@ onemeta-demo/
 
 No build step, no npm — by design, same as ThemePlus Demo. OneMeta integration requires zero tooling, and this theme proves it.
 
-## A note on field config schema
+## Field config shape
 
-`inc/onemeta-field-groups.php` is built directly against `includes/Admin/FieldTypeSchemas.php` and `includes/Core/Sanitizer.php` — every key (`choices`, `sub_fields`, `button_text`, `return_format`, `preview_size`, `file_type`, `min`/`max`, `min_rows`/`max_rows`, `on_text`/`off_text`, `allow_null`, `layout`) is taken from the real source, not reconstructed from docs.
+`inc/onemeta-field-groups.php` uses the same shape the OneMeta builder saves and **Export as PHP** generates:
 
-Two things worth your attention came out of that review:
-
-1. **`heading` is a real, working field type** — defined in `FieldTypeSchemas.php` and listed first in the field palette (`field-palette-sidebar.js`), but it's not in the GitHub README, readme.txt, or docs site "14 field types" list anywhere. It's display-only (renders a heading tag + optional separator, stores no value), so it may be intentionally excluded from the count rather than a doc gap — worth deciding which, since right now anyone who opens the palette will find an entirely undocumented field type. The Field Types Lab panel calls it out explicitly.
-2. **Possible repeater sub-field sanitization mismatch**: `Sanitizer::get_sub_field_type()` looks up a sub-field's type by iterating `$sub_fields_config` and checking `$sub_field['key'] === $field_key` — i.e. it expects a flat list where each entry carries its own `key` property. But every documented and exported example of `sub_fields` (including the CodeExporter output) is an *associative* array keyed by the sub-field's own key, like the top-level `fields` array — with no `key` property inside each entry. If that's accurate, the lookup never matches, and every repeater sub-field silently falls back to generic `sanitize_value()` instead of its type-specific sanitizer (so an `image` sub-field's ID wouldn't get `absint()`'d, a `toggle` sub-field wouldn't get normalized to `"0"`/`"1"`, etc.). Worth a quick check against `MetaSaver.php` (not reviewed here) to see what shape actually reaches the sanitizer at save time — if `sub_fields` really is associative-by-key everywhere else, this is a real bug rather than something I've misread.
+- `fields` is keyed by each field's key.
+- A repeater's `sub_fields` is a list of field arrays, each with its own `'key'`.
+- `heading` is a display-only field (a heading tag and optional separator) that stores no value.
 
 ## Conventions demonstrated
 
